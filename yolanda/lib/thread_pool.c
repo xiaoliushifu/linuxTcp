@@ -40,11 +40,14 @@ void thread_pool_start(struct thread_pool *threadPool) {
     }
     //可以一次性申请整块数组的内存，在此说明数组的内存地址都是连续的
     //申请n个大小为event_loop_thread的连续内存空间
+    printf("根据线程数申请内存空间，循环开启线程... 当前在%d. \n\n\n",pthread_self());
     threadPool->eventLoopThreads = malloc(threadPool->thread_number * sizeof(struct event_loop_thread));
     for (int i = 0; i < threadPool->thread_number; ++i) {
-        //这俩函数，还是封装，还不是之前见过的c原生线程生成函数
+        //子线程初始化，命名
         event_loop_thread_init(&threadPool->eventLoopThreads[i], i);
+        //子线程启动
         event_loop_thread_start(&threadPool->eventLoopThreads[i]);
+        printf("线程%d的init,start结束. 当前在%d. \n",i,pthread_self());
     }
 }
 
@@ -67,11 +70,11 @@ struct event_loop *thread_pool_get_loop(struct thread_pool *threadPool) {
     //从线程池中按照顺序挑选出一个线程
     if (threadPool->thread_number > 0) {
         //如果线程池可以挑选，则很可能覆盖主线程
-        printf("线程池中的eventLoop,可以使用。。。。。。\n");
+        printf("线程池中的eventLoop,可以使用。。selected。。。%d。\n",pthread_self());
         selected = threadPool->eventLoopThreads[threadPool->position].eventLoop;
         //线程轮流着来
         if (++threadPool->position >= threadPool->thread_number) {
-            printf("线程池满，重置线程池下标为0... \n");
+            printf("线程池满，重置线程池下标为0...%d。\n",pthread_self());
             threadPool->position = 0;
         }
     }

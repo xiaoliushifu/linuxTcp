@@ -74,7 +74,7 @@ tcp_connection_new(int connected_fd, struct event_loop *eventLoop,
                    connection_closed_call_back connectionClosedCallBack,
                    message_call_back messageCallBack, write_completed_call_back writeCompletedCallBack) {
 
-                   printf("新连接来了，新构建tcpconnection----%d。。。\n", connected_fd);
+                   printf("执行tcp_connection_new()----%d。当前在%d。\n", connected_fd,pthread_self());
 
     struct tcp_connection *tcpConnection = malloc(sizeof(struct tcp_connection));
     //每新来一个连接，都把指针填满
@@ -107,8 +107,10 @@ tcp_connection_new(int connected_fd, struct event_loop *eventLoop,
         //连接建立完成之后，调用一个回调，传递tcpConnection
         tcpConnection->connectionCompletedCallBack(tcpConnection);
     }
-    printf("新连接fd:%d触发add_channel事件... \n",connected_fd);
+    printf("新连接fd:%d触发add_channel事件...当前在%d \n",connected_fd,pthread_self());
     event_loop_add_channel_event(tcpConnection->eventLoop, connected_fd, tcpConnection->channel);
+
+    printf("执行tcp_connection_new()结束了----%d。。当前在%d。\n", connected_fd,pthread_self());
     return tcpConnection;
 }
 

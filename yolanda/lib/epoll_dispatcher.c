@@ -67,7 +67,7 @@ void *epoll_init(struct event_loop *eventLoop) {
     在epoll_start中调用epoll_wait开始监听套接字
 */
 int epoll_add(struct event_loop *eventLoop, struct channel *channel1) {
-    printf("eventDispatcher结构体的add指针成员指向的是epoll_add()函数 \n");
+    printf("eventDispatcher结构体的add指针成员指向的是epoll_add()函数 %s... \n",eventLoop->thread_name);
     epoll_dispatcher_data *pollDispatcherData = (epoll_dispatcher_data *) eventLoop->event_dispatcher_data;
 
     int fd = channel1->fd;
@@ -87,7 +87,7 @@ int epoll_add(struct event_loop *eventLoop, struct channel *channel1) {
     event.events = events;
 //    event.events = events | EPOLLET;
     //把它加入到epoll中
-    printf("最最最终，是调用epoll_ctl，完成channel封装下的fd:%d的添加......\n",fd);
+    printf("最最最终，是调用epoll_ctl，完成channel封装下的fd:%d的添加....%s..\n",fd,eventLoop->thread_name);
     if (epoll_ctl(pollDispatcherData->efd, EPOLL_CTL_ADD, fd, &event) == -1) {
         error(1, errno, "epoll_ctl add  fd failed");
     }
@@ -99,9 +99,9 @@ int epoll_add(struct event_loop *eventLoop, struct channel *channel1) {
     删除某套接字的监听事件
 */
 int epoll_del(struct event_loop *eventLoop, struct channel *channel1) {
-    printf("eventDispatcher结构体的del指针成员指向的是epoll_del()函数 \n");
+    printf("eventDispatcher结构体的del指针成员指向的是epoll_del()函数 %s... \n",eventLoop->thread_name);
 
-    printf("实际是epoll_del()函数 完成channel的删除\n");
+    printf("实际是epoll_del()函数 完成channel的删除 %s... \n",eventLoop->thread_name);
     epoll_dispatcher_data *pollDispatcherData = (epoll_dispatcher_data *) eventLoop->event_dispatcher_data;
 
     int fd = channel1->fd;
@@ -120,7 +120,7 @@ int epoll_del(struct event_loop *eventLoop, struct channel *channel1) {
     event.data.fd = fd;
     event.events = events;
 //    event.events = events | EPOLLET;
-        printf("最最最终，是调用epoll_ctl，完成channel封装下的fd:%d的删除    \n",fd);
+        printf("最最最终，是调用epoll_ctl，完成channel封装下的fd:%d的删除   %s... \n",fd,eventLoop->thread_name);
     if (epoll_ctl(pollDispatcherData->efd, EPOLL_CTL_DEL, fd, &event) == -1) {
         error(1, errno, "epoll_ctl delete fd failed");
     }
@@ -161,20 +161,20 @@ int epoll_update(struct event_loop *eventLoop, struct channel *channel1) {
 这个函数是epollDispatch结构体的指针指向的
 */
 int epoll_dispatch(struct event_loop *eventLoop, struct timeval *timeval) {
-    printf("eventDispatcher结构体的dispatch指针成员指向的是epoll_dispatch()函数 \n");
+    printf("执行epoll_dispatch()函数 %s..当前在%d. \n",eventLoop->thread_name,pthread_self());
     epoll_dispatcher_data *epollDispatcherData = (epoll_dispatcher_data *) eventLoop->event_dispatcher_data;
     int i, n;
 
     //epoll这一行代码开始监听了哦
-    printf( "最终epoll_dispatch()函数中的epoll_wait阻塞\n");
+    printf( "最终epoll_dispatch()函数中的epoll_wait阻塞 %s..当前在%d. \n",eventLoop->thread_name,pthread_self());
     n = epoll_wait(epollDispatcherData->efd, epollDispatcherData->events, MAXEVENTS, -1);
-    printf("epoll_wait函数醒了, 发生了%d个事件，在%s线程 \n", n,eventLoop->thread_name);
+    printf("epoll_wait函数醒了, 发生了%d个事件，%s,在%d线程 \n", n,eventLoop->thread_name,pthread_self());
     //开始遍历发生的事件数量
-    printf("遍历epollDispatcherData的events数组。。。。。。\n");
+    printf("遍历epollDispatcherData的events数组。。。。。。%s... \n",eventLoop->thread_name);
     for (i = 0; i < n; i++) {
         //有关epoll异常的判断
         if ((epollDispatcherData->events[i].events & EPOLLERR) || (epollDispatcherData->events[i].events & EPOLLHUP)) {
-            fprintf(stderr, "epoll error\n");
+            fprintf(stderr, "epoll error %s... \n",eventLoop->thread_name);
             printf("哪个fd:%d发生了异常事件, 在%s线程", epollDispatcherData->events[i].data.fd, eventLoop->thread_name);
             close(epollDispatcherData->events[i].data.fd);
             continue;
@@ -199,8 +199,8 @@ int epoll_dispatch(struct event_loop *eventLoop, struct timeval *timeval) {
             channel_event_activate(eventLoop, epollDispatcherData->events[i].data.fd, EVENT_WRITE);
         }
     }
-    printf("遍历epollDispatcherData的events数组结束。。休息3s中。。。。\n");
-    sleep(3);
+    printf("遍历epollDispatcherData的events数组结束。。休息3s中。。elName%s...当前在%d \n",eventLoop->thread_name,pthread_self());
+//    sleep(3);
 
     return 0;
 }

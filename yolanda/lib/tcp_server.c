@@ -130,7 +130,7 @@ tcp_server_init(struct event_loop *eventLoop, struct acceptor *acceptor,
     printf("tcpServer初始化时完成线程池结构体的初始化,数量:%d... \n",threadNum);
     tcpServer->threadPool = thread_pool_new(eventLoop, threadNum);
     tcpServer->data = NULL;
-
+printf("tcp_server_init,数量:%d... \n",threadNum);
     return tcpServer;
 }
 
@@ -163,7 +163,7 @@ int handle_connection_established(void *data) {
     printf("尝试从线程池中取得eventLoop:%d，绑定到tcpConnection中.......\n",eventLoop);
 
     // create a new tcp connection
-    printf("新连接fd:%d要初始化tcpConnection \n",connected_fd);
+    printf("新连接fd:%d要初始化tcpConnection，绑定eventLoop\n",connected_fd);
     struct tcp_connection *tcpConnection = tcp_connection_new(connected_fd, eventLoop,
                                                               tcpServer->connectionCompletedCallBack,
                                                               tcpServer->connectionClosedCallBack,
@@ -187,7 +187,7 @@ int handle_connection_established(void *data) {
 
 */
 void tcp_server_start(struct TCPserver *tcpServer) {
-    printf("执行tcp_server_start函数。。。。。。 \n");
+    printf("执行tcp_server_start函数。。。。。。%s \n",pthread_self());
     //把这两个重要的成员单独拿出来
     struct acceptor *acceptor = tcpServer->acceptor;
     struct event_loop *eventLoop = tcpServer->eventLoop;
@@ -195,19 +195,20 @@ void tcp_server_start(struct TCPserver *tcpServer) {
     //开启多个线程，线程数为0时，不开启线程池
     //这就是框架的好处，通过参数的配置，灵活的使用线程池或者不用线程池
 
-    printf("tcpServer中执行thread_pool_start函数，启动线程池。。。。。。 \n");
+    printf("tcpServer中执行thread_pool_start函数，开始启动线程池。。。。。。 \n\n\n");
     thread_pool_start(tcpServer->threadPool);
+    printf("thread_pool_start函数结束，线程池已经启动。。。。。。 \n\n\n");
 
     //acceptor主线程， 同时把tcpServer作为参数传给channel对象
     //实例化channel并初始化channel_new的成员
     //channel也有指向监听套接字的指针成员
     //这其实就是封装过程，我们看前三个参数：哪个fd,感兴趣的事件，发生事件时的响应回调
-    printf("listen_fd:%d封装为channel,感兴趣事件event:%d，data是tcpServer \n",acceptor->listen_fd,EVENT_READ);
+    printf("listen_fd:%d封装为channel,感兴趣事件event:%d，data是tcpServer %s \n",acceptor->listen_fd,EVENT_READ,eventLoop->thread_name);
     struct channel *channel = channel_new(acceptor->listen_fd, EVENT_READ, handle_connection_established, NULL,
                                           tcpServer);
     //把channel和eventLoop建立关系，啥关系呢？？
     //channel注册到eventLoop，建立关系
-    printf("调用event_loop_add_channel_event()函数，加入pending队列。。。 \n");
+    printf("调用event_loop_add_channel_event()函数，加入pending队列。。。%s \n",eventLoop->thread_name);
     event_loop_add_channel_event(eventLoop, channel->fd, channel);
     return;
 }

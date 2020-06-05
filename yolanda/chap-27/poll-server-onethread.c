@@ -64,8 +64,9 @@ int main(int c, char **v) {
     //然后给这个结构体的各个成员赋值
     //它的成员有几个重要的需要说明下：
     //最后一个参数设置线程数为0，也就是不需要子线程
+    //修改最后一个参数为4，使得开启子线程，主从-reactor
     struct TCPserver *tcpServer = tcp_server_init(eventLoop, acceptor, onConnectionCompleted, onMessage,
-                                                  onWriteCompleted, onConnectionClosed, 0);
+                                                  onWriteCompleted, onConnectionClosed, 2);
     //把linten套接字封装到channel,另外注册了监听套接字linten_fd的读事件回调
     //linten_fd的读事件回调，肯定就是accept()无疑
     tcp_server_start(tcpServer);

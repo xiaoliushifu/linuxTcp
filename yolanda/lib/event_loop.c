@@ -13,7 +13,7 @@
 // in the i/o thread
 int event_loop_handle_pending_channel(struct event_loop *eventLoop) {
     //get the lock
-    printf("pending链表上锁。 \n");
+    printf("pending链表上锁。 %s... \n",eventLoop->thread_name);
     pthread_mutex_lock(&eventLoop->mutex);
     //设置为1，不能再进来了
     eventLoop->is_handle_pending = 1;
@@ -21,33 +21,33 @@ int event_loop_handle_pending_channel(struct event_loop *eventLoop) {
     //从head开始,channelElement包裹这channel
     struct channel_element *channelElement = eventLoop->pending_head;
     //遍历channelElement链表
-    printf("遍历pending链表,把channelElement都处理完。。。。。。 \n");
+    printf("遍历pending链表,把channelElement都处理完。。。。。。 %s... \n",eventLoop->thread_name);
     while (channelElement != NULL) {
         //save into event_map
         struct channel *channel = channelElement->channel;
         int fd = channel->fd;
         //1，新来的，需要把channel通过fd和channelMap建立关系
         if (channelElement->type == 1) {
-            printf("channel-fd:%d的type=1，add... \n",fd);
+            printf("channel-fd:%d的type=1，add..%s. \n",fd,eventLoop->thread_name);
             event_loop_handle_pending_add(eventLoop, fd, channel);
             //表示删除
         } else if (channelElement->type == 2) {
-            printf("channel-fd:%d的type=2，remove... \n",fd);
+            printf("channel-fd:%d的type=2，remove...%s. \n",fd,eventLoop->thread_name);
             event_loop_handle_pending_remove(eventLoop, fd, channel);
         } else if (channelElement->type == 3) {
             //更新
-            printf("channel-fd:%d的type=3，update... \n",fd);
+            printf("channel-fd:%d的type=3，update...%s. \n",fd,eventLoop->thread_name);
             event_loop_handle_pending_update(eventLoop, fd, channel);
         }
         channelElement = channelElement->next;
     }
-    printf("pending链表处理完了。。。。。。 \n");
+    printf("pending链表处理完了。。。。。。 %s... \n",eventLoop->thread_name);
     //完事再初始化为0
     eventLoop->pending_head = eventLoop->pending_tail = NULL;
     eventLoop->is_handle_pending = 0;
 
     //release the lock
-    printf("pending链表释放锁。 \n");
+    printf("pending链表释放锁。 %s... \n",eventLoop->thread_name);
     pthread_mutex_unlock(&eventLoop->mutex);
 
     return 0;
@@ -63,17 +63,17 @@ int event_loop_handle_pending_channel(struct event_loop *eventLoop) {
 */
 void event_loop_channel_buffer_nolock(struct event_loop *eventLoop, int fd, struct channel *channel1, int type) {
     //add channel into the pending list
-    printf("把channel1封装为channelElement放到eventLoop的pending队列中 \n");
+    printf("把channel1封装为channelElement放到eventLoop的pending队列中 %s... \n",eventLoop->thread_name);
     struct channel_element *channelElement = malloc(sizeof(struct channel_element));
     channelElement->channel = channel1;
     channelElement->type = type;
     channelElement->next = NULL;
     if (eventLoop->pending_head == NULL) {
-        printf("第一个channelElement，放到eventLoop的pending队首和队尾 \n");
+        printf("第一个channelElement，放到eventLoop的pending队首和队尾 %s... \n",eventLoop->thread_name);
         eventLoop->pending_head = eventLoop->pending_tail = channelElement;
     } else {
         //后续的channel
-        printf("不是第一个channelElement，放到eventLoop的pending队尾 \n");
+        printf("不是第一个channelElement，放到eventLoop的pending队尾 %s... \n",eventLoop->thread_name);
         eventLoop->pending_tail->next = channelElement;
         eventLoop->pending_tail = channelElement;
     }
@@ -89,13 +89,13 @@ void event_loop_channel_buffer_nolock(struct event_loop *eventLoop, int fd, stru
 int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct channel *channel1, int type) {
     //get the lock
     //首先获得锁
-    printf("执行event_loop_do_channel_event函数，注册channel \n");
+    printf("执行event_loop_do_channel_event函数，注册channel  eLName%s 当前在%d\n",eventLoop->thread_name,pthread_self());
     pthread_mutex_lock(&eventLoop->mutex);
     //这个is_handle_pending确保等于0，否则退出程序
     assert(eventLoop->is_handle_pending == 0);
 
     //实例化channel_element，并放到eventLoop的成员head,tail这些
-    printf("调用event_loop_channel_buffer_nolock()方法，fd:%d... \n",channel1->fd);
+    printf("调用event_loop_channel_buffer_nolock()方法，fd:%d...%s \n",channel1->fd,eventLoop->thread_name);
     event_loop_channel_buffer_nolock(eventLoop, fd, channel1, type);
     //release the lock
     //释放锁
@@ -103,13 +103,13 @@ int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct cha
 
 
     if (!isInSameThread(eventLoop)) {
-        printf("调用event_loop_wakeup唤醒函数，fd:%d... \n",channel1->fd);
+        printf("调用event_loop_wakeup唤醒函数，fd:%d.. eLname%s. 当前在%d\n",channel1->fd,eventLoop->thread_name,pthread_self());
         event_loop_wakeup(eventLoop);
     } else {
-        printf("channel_event内部调用event_loop_handle_pending()函数，fd:%d... \n",channel1->fd);
+        printf("channel_event内部调用event_loop_handle_pending()函数，fd:%d...%s \n",channel1->fd,eventLoop->thread_name);
         event_loop_handle_pending_channel(eventLoop);
     }
-
+printf("执行event_loop_do_channel_event函数结束 eLName%s 当前在%d\n",eventLoop->thread_name,pthread_self());
     return 0;
 
 }
@@ -118,7 +118,7 @@ int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct cha
     channel注册到eventLoop上
 */
 int event_loop_add_channel_event(struct event_loop *eventLoop, int fd, struct channel *channel1) {
-    printf("执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:%d, \n",channel1->fd);
+    printf("执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:%d, %s \n",channel1->fd,eventLoop->thread_name);
     return event_loop_do_channel_event(eventLoop, fd, channel1, 1);
 }
 
@@ -133,7 +133,7 @@ int event_loop_update_channel_event(struct event_loop *eventLoop, int fd, struct
 
 // in the i/o thread
 int event_loop_handle_pending_add(struct event_loop *eventLoop, int fd, struct channel *channel) {
-    printf("执行event_loop_handle_pending_add()函数... \n");
+    printf("执行event_loop_handle_pending_add()函数... %s... \n",eventLoop->thread_name);
     //yolanda_msgx("添加一个channel channel fd == %d, %s", fd, eventLoop->thread_name);
     struct channel_map *map = eventLoop->channelMap;
 
@@ -141,7 +141,7 @@ int event_loop_handle_pending_add(struct event_loop *eventLoop, int fd, struct c
         return 0;
 
     if (fd >= map->nentries) {
-            printf("重置map空间... \n");
+            printf("重置map空间... %s... \n",eventLoop->thread_name);
         if (map_make_space(map, fd, sizeof(struct channel *)) == -1)
             return (-1);
     }
@@ -149,12 +149,12 @@ int event_loop_handle_pending_add(struct event_loop *eventLoop, int fd, struct c
     //entries中不存在这个套接字，那就把fd对应的channel放到里面
     //注意：就是这里把map->fd->channel 三者建立了关系
     if ((map)->entries[fd] == NULL) {
-        printf("map和channel建立关系，map->entries[fd:%d] = channel ... \n",fd);
+        printf("map和channel建立关系，map->entries[fd:%d] = channel ..%s. \n",fd,eventLoop->thread_name);
         map->entries[fd] = channel;
         //add channel
         struct event_dispatcher *eventDispatcher = eventLoop->eventDispatcher;
         //调用add方法
-        printf("执行eventDispatcher的add函数 ...... \n");
+        printf("执行eventDispatcher的add函数 ..%s... \n",eventLoop->thread_name);
         eventDispatcher->add(eventLoop, channel);
         return 1;
     }
@@ -248,18 +248,26 @@ int channel_event_activate(struct event_loop *eventLoop, int fd, int revents) {
         printf("channel-fd:%d发生写事件..，执行它当初注册时的回调eventWriteCallback指针。。。。。。 \n",fd);
         if (channel->eventWriteCallback) channel->eventWriteCallback(channel->data);
     }
-    printf("channel_event_activate()方法执行结束.. \n");
+    printf("channel_event_activate()方法执行结束..当前在%d \n",pthread_self());
     return 0;
 
 }
 
+/**
+    这个操作是啥意思？？？
+
+*/
 void event_loop_wakeup(struct event_loop *eventLoop) {
+
+    printf("执行event_loop_wakeup()函数...elName%s, 当前在%d \n",eventLoop->thread_name,pthread_self());
     char one = 'a';
     //往套接字里写一个字符a
+    printf("往参数eventLoop里的socketPair[0]发一个字符...elName%s, 当前在%d \n",eventLoop->thread_name,pthread_self());
     ssize_t n = write(eventLoop->socketPair[0], &one, sizeof one);
     if (n != sizeof one) {
         LOG_ERR("wakeup event loop thread failed");
     }
+    printf("event_loop_wakeup()函数结束...elName%s, 当前在%d \n",eventLoop->thread_name,pthread_self());
 }
 
 /**
@@ -281,11 +289,12 @@ struct event_loop *event_loop_init() {
 }
 
 struct event_loop *event_loop_init_with_name(char *thread_name) {
-    printf("eventLoop开始初始化。。。。。。 \n");
+    printf("eventLoop开始初始化。。。。。。 工作线程是：%s\n", thread_name);
     struct event_loop *eventLoop = malloc(sizeof(struct event_loop));
     pthread_mutex_init(&eventLoop->mutex, NULL);
     pthread_cond_init(&eventLoop->cond, NULL);
 
+    //把名字加上
     if (thread_name != NULL) {
         eventLoop->thread_name = thread_name;
     } else {
@@ -293,32 +302,34 @@ struct event_loop *event_loop_init_with_name(char *thread_name) {
     }
 
     eventLoop->quit = 0;
-    printf("成员channelMap初始化... \n");
+    printf("成员channelMap初始化... 当前工作线程是：%s\n", eventLoop->thread_name);
     eventLoop->channelMap = malloc(sizeof(struct channel_map));
     map_init(eventLoop->channelMap);
 
 #ifdef EPOLL_ENABLE
-    printf("把epoll作为事件派发器, %s", eventLoop->thread_name);
+    printf("把epoll作为事件派发器, %s\n", eventLoop->thread_name);
     eventLoop->eventDispatcher = &epoll_dispatcher;
 #else
-    printf("把poll作为事件派发器, %s", eventLoop->thread_name);
+    printf("把poll作为事件派发器, %s\n", eventLoop->thread_name);
     eventLoop->eventDispatcher = &poll_dispatcher;
 #endif
-    printf("调用事件派发器的初始化方法init().......\n");
+    printf("调用事件派发器的初始化方法init().......%s\n", eventLoop->thread_name);
     eventLoop->event_dispatcher_data = eventLoop->eventDispatcher->init(eventLoop);
 
     //add the socketfd to event
-    printf("eventLoop绑定当前线程id，在owner_thread_id成员上.......\n");
+    printf("eventLoop绑定当前线程id，在owner_thread_id成员上.......%s\n", eventLoop->thread_name);
     eventLoop->owner_thread_id = pthread_self();
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, eventLoop->socketPair) < 0) {
         LOG_ERR("socketpair set fialed");
     }
-    printf("eventLoop->socketPair，生成两个内部套接字，0:%d----1:%d.......\n",eventLoop->socketPair[0],eventLoop->socketPair[1]);
+    printf("eventLoop记录线程id：%d,----,self():%d\n", eventLoop->owner_thread_id,pthread_self());
+
+    printf("eventLoop->socketPair，生成两个内部套接字，0:%d----1:%d.....%s..\n",eventLoop->socketPair[0],eventLoop->socketPair[1],eventLoop->thread_name);
     eventLoop->is_handle_pending = 0;
     eventLoop->pending_head = NULL;
     eventLoop->pending_tail = NULL;
 
-    printf("单独把socketPair[1]封装成channel，事件是%d，回调是handleWakeup(),data是eventLoop.....\n",EVENT_READ);
+    printf("单独把socketPair[1]封装成channel，事件是%d，回调是handleWakeup(),data是eventLoop...%s..\n",EVENT_READ,eventLoop->thread_name);
     struct channel *channel = channel_new(eventLoop->socketPair[1], EVENT_READ, handleWakeup, NULL, eventLoop);
     event_loop_add_channel_event(eventLoop, eventLoop->socketPair[1], channel);
 
@@ -339,7 +350,7 @@ int event_loop_run(struct event_loop *eventLoop) {
         exit(1);
     }
 
-    printf("eventLoop 启动。。。。\n");
+    printf("eventLoop 启动。%s。当前在%d\n",eventLoop->thread_name,pthread_self());
     struct timeval timeval;
     timeval.tv_sec = 1;
 
@@ -349,11 +360,11 @@ int event_loop_run(struct event_loop *eventLoop) {
         dispatcher->dispatch(eventLoop, &timeval);
 
         //handle the pending channel
-        printf("dispatch方法后，eventLoop去处理pending队列。。。。 \n");
+        printf("dispatch方法后，eventLoop去处理pending队列。。%s。当前是%d\n",eventLoop->thread_name,pthread_self());
         event_loop_handle_pending_channel(eventLoop);
     }
 
-    printf("eventLoop 停止。。。。\n");
+    printf("eventLoop 停止。。%s。 当前是%d\n",eventLoop->thread_name,pthread_self());
     return 0;
 }
 
