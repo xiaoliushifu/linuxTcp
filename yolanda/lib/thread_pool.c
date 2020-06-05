@@ -70,7 +70,7 @@ struct event_loop *thread_pool_get_loop(struct thread_pool *threadPool) {
     //从线程池中按照顺序挑选出一个线程
     if (threadPool->thread_number > 0) {
         //如果线程池可以挑选，则很可能覆盖主线程
-        printf("线程池中的eventLoop,可以使用。。selected。。。%d。\n",pthread_self());
+        printf("线程池中使用%d号线程。。。\n",threadPool->position);
         selected = threadPool->eventLoopThreads[threadPool->position].eventLoop;
         //线程轮流着来
         if (++threadPool->position >= threadPool->thread_number) {

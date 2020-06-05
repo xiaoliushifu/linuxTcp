@@ -25,6 +25,7 @@ int handle_read(void *data) {
     struct channel *channel = tcpConnection->channel;
 
     if (buffer_socket_read(input_buffer, channel->fd) > 0) {
+        printf("tcpConnection-fd:%d,读取连接发来的数据.. \n",channel->fd);
         //应用程序真正读取Buffer里的数据
         if (tcpConnection->messageCallBack != NULL) {
             tcpConnection->messageCallBack(input_buffer, tcpConnection);
@@ -74,7 +75,7 @@ tcp_connection_new(int connected_fd, struct event_loop *eventLoop,
                    connection_closed_call_back connectionClosedCallBack,
                    message_call_back messageCallBack, write_completed_call_back writeCompletedCallBack) {
 
-                   printf("执行tcp_connection_new()----%d。当前在%d。\n", connected_fd,pthread_self());
+                   printf("tcp_connection_new()----%d。当前在%d。\n", connected_fd,pthread_self());
 
     struct tcp_connection *tcpConnection = malloc(sizeof(struct tcp_connection));
     //每新来一个连接，都把指针填满
@@ -95,7 +96,7 @@ tcp_connection_new(int connected_fd, struct event_loop *eventLoop,
 
     // add event read for the new connection
     //新来都连接，把连接套接字connected_fd封装为channel（它关心的事件EVENT_READ，读事件回调，写事件回调，tcp
-    printf("连接fd:%d封装为channel,感兴趣事件event:%d，data是tcpConnection \n",connected_fd,EVENT_READ);
+    printf("新连接fd:%d封装为channel,感兴趣事件event:%d，data是tcpConnection \n",connected_fd,EVENT_READ);
     struct channel *channel1 = channel_new(connected_fd, EVENT_READ, handle_read, handle_write, tcpConnection);
 
     //互相连接，
@@ -110,7 +111,7 @@ tcp_connection_new(int connected_fd, struct event_loop *eventLoop,
     printf("新连接fd:%d触发add_channel事件...当前在%d \n",connected_fd,pthread_self());
     event_loop_add_channel_event(tcpConnection->eventLoop, connected_fd, tcpConnection->channel);
 
-    printf("执行tcp_connection_new()结束了----%d。。当前在%d。\n", connected_fd,pthread_self());
+    printf("执行tcp_connection_new()结束----%d。。当前在%d。\n", connected_fd,pthread_self());
     return tcpConnection;
 }
 

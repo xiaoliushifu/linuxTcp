@@ -67,7 +67,7 @@ void *epoll_init(struct event_loop *eventLoop) {
     在epoll_start中调用epoll_wait开始监听套接字
 */
 int epoll_add(struct event_loop *eventLoop, struct channel *channel1) {
-    printf("eventDispatcher结构体的add指针成员指向的是epoll_add()函数 %s... \n",eventLoop->thread_name);
+    printf("eventDispatcher的epoll_add()函数 %s... \n",eventLoop->thread_name);
     epoll_dispatcher_data *pollDispatcherData = (epoll_dispatcher_data *) eventLoop->event_dispatcher_data;
 
     int fd = channel1->fd;
@@ -91,7 +91,6 @@ int epoll_add(struct event_loop *eventLoop, struct channel *channel1) {
     if (epoll_ctl(pollDispatcherData->efd, EPOLL_CTL_ADD, fd, &event) == -1) {
         error(1, errno, "epoll_ctl add  fd failed");
     }
-
     return 0;
 }
 
@@ -170,18 +169,18 @@ int epoll_dispatch(struct event_loop *eventLoop, struct timeval *timeval) {
     n = epoll_wait(epollDispatcherData->efd, epollDispatcherData->events, MAXEVENTS, -1);
     printf("epoll_wait函数醒了, 发生了%d个事件，%s,在%d线程 \n", n,eventLoop->thread_name,pthread_self());
     //开始遍历发生的事件数量
-    printf("遍历epollDispatcherData的events数组。。。。。。%s... \n",eventLoop->thread_name);
+    printf("遍历events数组。。。。%s... \n",eventLoop->thread_name);
     for (i = 0; i < n; i++) {
         //有关epoll异常的判断
         if ((epollDispatcherData->events[i].events & EPOLLERR) || (epollDispatcherData->events[i].events & EPOLLHUP)) {
             fprintf(stderr, "epoll error %s... \n",eventLoop->thread_name);
-            printf("哪个fd:%d发生了异常事件, 在%s线程", epollDispatcherData->events[i].data.fd, eventLoop->thread_name);
+            printf("fd:%d发生了异常事件, 在%s线程", epollDispatcherData->events[i].data.fd, eventLoop->thread_name);
             close(epollDispatcherData->events[i].data.fd);
             continue;
         }
         //信息来了，需要读
         if (epollDispatcherData->events[i].events & EPOLLIN) {
-            printf("哪个fd:%d发生了读事件, 在%s线程", epollDispatcherData->events[i].data.fd, eventLoop->thread_name);
+            printf("fd:%d发生了读事件, 在%s线程", epollDispatcherData->events[i].data.fd, eventLoop->thread_name);
                 //注意参数：
                 //1eventLoop
                 //2哪个套接字
@@ -191,7 +190,7 @@ int epoll_dispatch(struct event_loop *eventLoop, struct timeval *timeval) {
 
         //需要写
         if (epollDispatcherData->events[i].events & EPOLLOUT) {
-            yolanda_msgx("哪个 channel要写信息 fd==%d, 哪个线程：%s", epollDispatcherData->events[i].data.fd,eventLoop->thread_name);
+            yolanda_msgx("fd==%d发生写事件, 哪个线程：%s", epollDispatcherData->events[i].data.fd,eventLoop->thread_name);
             //注意参数：
             //1eventLoop
             //2哪个套接字
@@ -199,9 +198,7 @@ int epoll_dispatch(struct event_loop *eventLoop, struct timeval *timeval) {
             channel_event_activate(eventLoop, epollDispatcherData->events[i].data.fd, EVENT_WRITE);
         }
     }
-    printf("遍历epollDispatcherData的events数组结束。。休息3s中。。elName%s...当前在%d \n",eventLoop->thread_name,pthread_self());
-//    sleep(3);
-
+    printf("遍历events数组结束。。elName%s...当前在%d \n",eventLoop->thread_name,pthread_self());
     return 0;
 }
 

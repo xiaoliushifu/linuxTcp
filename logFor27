@@ -1,0 +1,405 @@
+                                                        //主线程启动
+eventLoop开始初始化。。。。。。 工作线程是：(null)
+成员channelMap初始化... 当前工作线程是：main thread
+把epoll作为事件派发器, main thread
+调用事件派发器的初始化方法init().......main thread
+eventDispatcher结构体的init指针成员指向的是epoll_init()函数....
+事件派发器最重要一点是执行epoll_create1()函数，完成epoll对象创建....
+完成epoll事件结构体的内存申请....
+eventLoop绑定当前线程id，在owner_thread_id成员上.......main thread
+eventLoop记录线程id：-337930432,----,self():-337930432
+eventLoop->socketPair，生成两个内部套接字，0:4----1:5.....main thread..
+单独把socketPair[1]封装成channel，事件是2，回调是handleWakeup(),data是eventLoop...main thread..
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:5, main thread
+执行event_loop_do_channel_event函数，注册channel  eLNamemain thread 当前在-337930432
+调用event_loop_channel_buffer_nolock()方法，fd:5...main thread
+把channel1封装为channelElement放到eventLoop的pending队列中 main thread...
+第一个channelElement，放到eventLoop的pending队首和队尾 main thread...
+channel_event内部调用event_loop_handle_pending()函数，fd:5...main thread
+pending链表上锁。 main thread...
+遍历pending链表,把channelElement都处理完。。。。。。 main thread...
+channel-fd:5的type=1，add..main thread.
+执行event_loop_handle_pending_add()函数... main thread...
+重置map空间... main thread...
+map和channel建立关系，map->entries[fd:5] = channel ..main thread.
+执行eventDispatcher的add函数 ..main thread...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 main thread...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:5的添加....main thread..
+pending链表处理完了。。。。。。 main thread...
+pending链表释放锁。 main thread...
+执行event_loop_do_channel_event函数结束 eLNamemain thread 当前在-337930432
+tcpServer初始化时完成线程池结构体的初始化,数量:2...
+tcp_server_init,数量:2...
+执行tcp_server_start函数。。。。。。@????
+tcpServer中执行thread_pool_start函数，开始启动线程池。。。。。。
+
+
+根据线程数申请内存空间，循环开启子线程... 当前在-337930432.
+
+主线程初始化子线程结构：Thread-1...
+主线程创建一个子线程，入口函数是thread_run(),..Thread-1,当前在-337930432
+主线程上互斥锁..Thread-1 当前在-337930432
+主线程主动挂起.等待子进程的eventLoop的创建.Thread-1 当前在-337930432
+                                                                    //子线程初始化部分--------
+  子线程入口函数开始, Thread-1,当前在-346323200子线程先上锁.Thread-1..
+[msg] 子线程内eventLoop初始化, Thread-1
+eventLoop开始初始化。。。。。。 工作线程是：Thread-1
+成员channelMap初始化... 当前工作线程是：Thread-1
+把epoll作为事件派发器, Thread-1
+调用事件派发器的初始化方法init().......Thread-1
+eventDispatcher结构体的init指针成员指向的是epoll_init()函数....
+事件派发器最重要一点是执行epoll_create1()函数，完成epoll对象创建....
+完成epoll事件结构体的内存申请....
+eventLoop绑定当前线程id，在owner_thread_id成员上.......Thread-1
+eventLoop记录线程id：-346323200,----,self():-346323200
+eventLoop->socketPair，生成两个内部套接字，0:8----1:9.....Thread-1..
+单独把socketPair[1]封装成channel，事件是2，回调是handleWakeup(),data是eventLoop...Thread-1..
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:9, Thread-1
+执行event_loop_do_channel_event函数，注册channel  eLNameThread-1 当前在-346323200
+调用event_loop_channel_buffer_nolock()方法，fd:9...Thread-1
+把channel1封装为channelElement放到eventLoop的pending队列中 Thread-1...
+第一个channelElement，放到eventLoop的pending队首和队尾 Thread-1...
+channel_event内部调用event_loop_handle_pending()函数，fd:9...Thread-1
+pending链表上锁。 Thread-1...
+遍历pending链表,把channelElement都处理完。。。。。。 Thread-1...
+channel-fd:9的type=1，add..Thread-1.
+执行event_loop_handle_pending_add()函数... Thread-1...
+重置map空间... Thread-1...
+map和channel建立关系，map->entries[fd:9] = channel ..Thread-1.
+执行eventDispatcher的add函数 ..Thread-1...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 Thread-1...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:9的添加....Thread-1..
+pending链表处理完了。。。。。。 Thread-1...
+pending链表释放锁。 Thread-1...
+执行event_loop_do_channel_event函数结束 eLNameThread-1 当前在-346323200
+[msg] 子线程发信号激活主线程, Thread-1，当前在-346323200
+子线程释放锁..Thread-1，当前在-346323200
+
+
+子线程loop_run(), Thread-1，当前在-346323200
+eventLoop 启动。Thread-1。当前在-346323200
+执行epoll_dispatch()函数 Thread-1..当前在-346323200.
+最终epoll_dispatch()函数中的epoll_wait阻塞 Thread-1..当前在-346323200.
+
+主线程释放互斥锁,0..Thread-1 当前在-337930432
+主线程event_loop_thread_start()函数结束, Thread-1  当前在-337930432
+线程0的init,start结束. 当前在-337930432.
+
+主线程初始化子线程结构：Thread-2...
+主线程创建一个子线程，入口函数是thread_run(),..Thread-2,当前在-337930432
+主线程上互斥锁..Thread-2 当前在-337930432
+主线程主动挂起.等待子进程的eventLoop的创建.Thread-2 当前在-337930432
+
+                                                                    //子线程2开始初始化--------
+  子线程入口函数开始, Thread-2,当前在-354715904子线程先上锁.Thread-2..
+[msg] 子线程内eventLoop初始化, Thread-2
+eventLoop开始初始化。。。。。。 工作线程是：Thread-2
+成员channelMap初始化... 当前工作线程是：Thread-2
+把epoll作为事件派发器, Thread-2
+调用事件派发器的初始化方法init().......Thread-2
+eventDispatcher结构体的init指针成员指向的是epoll_init()函数....
+事件派发器最重要一点是执行epoll_create1()函数，完成epoll对象创建....
+完成epoll事件结构体的内存申请....
+eventLoop绑定当前线程id，在owner_thread_id成员上.......Thread-2
+eventLoop记录线程id：-354715904,----,self():-354715904
+eventLoop->socketPair，生成两个内部套接字，0:11----1:12.....Thread-2..
+单独把socketPair[1]封装成channel，事件是2，回调是handleWakeup(),data是eventLoop...Thread-2..
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:12, Thread-2
+执行event_loop_do_channel_event函数，注册channel  eLNameThread-2 当前在-354715904
+调用event_loop_channel_buffer_nolock()方法，fd:12...Thread-2
+把channel1封装为channelElement放到eventLoop的pending队列中 Thread-2...
+第一个channelElement，放到eventLoop的pending队首和队尾 Thread-2...
+channel_event内部调用event_loop_handle_pending()函数，fd:12...Thread-2
+pending链表上锁。 Thread-2...
+遍历pending链表,把channelElement都处理完。。。。。。 Thread-2...
+channel-fd:12的type=1，add..Thread-2.
+执行event_loop_handle_pending_add()函数... Thread-2...
+重置map空间... Thread-2...
+map和channel建立关系，map->entries[fd:12] = channel ..Thread-2.
+执行eventDispatcher的add函数 ..Thread-2...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 Thread-2...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:12的添加....Thread-2..
+pending链表处理完了。。。。。。 Thread-2...
+pending链表释放锁。 Thread-2...
+执行event_loop_do_channel_event函数结束 eLNameThread-2 当前在-354715904
+[msg] 子线程发信号激活主线程, Thread-2，当前在-354715904
+子线程释放锁..Thread-2，当前在-354715904
+
+
+子线程loop_run(), Thread-2，当前在-354715904
+eventLoop 启动。Thread-2。当前在-354715904
+执行epoll_dispatch()函数 Thread-2..当前在-354715904.
+最终epoll_dispatch()函数中的epoll_wait阻塞 Thread-2..当前在-354715904.
+
+                                                                //子线程初始化结束，它们都开始监听，下面是主线程执行部分
+主线程释放互斥锁,0..Thread-2 当前在-337930432
+主线程event_loop_thread_start()函数结束, Thread-2  当前在-337930432
+线程1的init,start结束. 当前在-337930432.
+thread_pool_start函数结束，线程池已经启动。。。。。。
+
+                                                                    //下面都是主线程执行了，把监听套接字6让epoll监听起来
+listen_fd:6封装为channel,感兴趣事件event:2，data是tcpServer main thread
+调用event_loop_add_channel_event()函数，加入pending队列。。。main thread
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:6, main thread
+执行event_loop_do_channel_event函数，注册channel  eLNamemain thread 当前在-337930432
+调用event_loop_channel_buffer_nolock()方法，fd:6...main thread
+把channel1封装为channelElement放到eventLoop的pending队列中 main thread...
+第一个channelElement，放到eventLoop的pending队首和队尾 main thread...
+channel_event内部调用event_loop_handle_pending()函数，fd:6...main thread
+pending链表上锁。 main thread...
+遍历pending链表,把channelElement都处理完。。。。。。 main thread...
+channel-fd:6的type=1，add..main thread.
+执行event_loop_handle_pending_add()函数... main thread...
+map和channel建立关系，map->entries[fd:6] = channel ..main thread.
+执行eventDispatcher的add函数 ..main thread...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 main thread...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:6的添加....main thread..
+pending链表处理完了。。。。。。 main thread...
+pending链表释放锁。 main thread...
+执行event_loop_do_channel_event函数结束 eLNamemain thread 当前在-337930432
+
+eventLoop 启动。main thread。当前在-337930432
+执行epoll_dispatch()函数 main thread..当前在-337930432.
+最终epoll_dispatch()函数中的epoll_wait阻塞 main thread..当前在-337930432.
+                                                                        //以上，主线程完成初始化和启动监听
+
+
+                                                                        //来了一个客户端建立连接，主线程处理
+epoll_wait函数醒了, 发生了1个事件，main thread,在-337930432线程
+遍历epollDispatcherData的events数组。。。。。。main thread...
+哪个fd:6发生了读事件, 在main thread线程channel_event_activate()方法执行..
+连接fd:6, 有事件revents=2 发生，当前工作线程是：main thread
+通过map快速把fd映射到具体的channel..
+channel-fd:6发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+                                                                    是监听套接字fd的读事件
+我是监听套接字的读事件处理函数，执行handle_connection_established()
+我是监听套接字fd:6的读事件处理函数，执行handle_connection_established()
+accept一个新连接， 新的socket=13
+
+新连接fd:13到来，调用thread_pool_get_loop()函数.......
+线程池中的eventLoop,可以使用。。selected。。。-337930432。
+尝试从线程池中取得eventLoop:-469759808，绑定到tcpConnection中.......
+新连接fd:13要初始化tcpConnection，绑定eventLoop
+执行tcp_connection_new()----13。当前在-337930432。
+                                                            //主线程把客户端新连接，加入到子线程的pending队列中
+连接fd:13封装为channel,感兴趣事件event:2，data是tcpConnection
+新连接建立完成，来个回调。。。tcpConnection-fd:13
+新连接fd:13触发add_channel事件...当前在-337930432
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:13, Thread-1
+执行event_loop_do_channel_event函数，注册channel  eLNameThread-1 当前在-337930432
+调用event_loop_channel_buffer_nolock()方法，fd:13...Thread-1
+把channel1封装为channelElement放到eventLoop的pending队列中 Thread-1...
+第一个channelElement，放到eventLoop的pending队首和队尾 Thread-1...
+                                                                        //注意这个操作，如何通知子线程的
+调用event_loop_wakeup唤醒函数，fd:13.. eLnameThread-1. 当前在-337930432
+执行event_loop_wakeup()函数...elNameThread-1, 当前在-337930432
+往参数eventLoop里的socketPair[0]发一个字符...elNameThread-1, 当前在-337930432
+
+event_loop_wakeup()函数结束...elNameThread-1, 当前在-337930432
+执行event_loop_do_channel_event函数结束 eLNameThread-1 当前在-337930432
+执行tcp_connection_new()结束了----13。。当前在-337930432。
+channel_event_activate()方法执行结束..当前在-337930432
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNamemain thread...当前在-337930432
+
+                                                                        //因为主线程的pending队列没数据
+                                                                        //主线程启动后，多线程场景下它的pending其实没用了
+dispatch方法后，eventLoop去处理pending队列。。main thread。当前是-337930432
+pending链表上锁。 main thread...
+遍历pending链表,把channelElement都处理完。。。。。。 main thread...
+pending链表处理完了。。。。。。 main thread...
+pending链表释放锁。 main thread...
+执行epoll_dispatch()函数 main thread..当前在-337930432.
+最终epoll_dispatch()函数中的epoll_wait阻塞 main thread..当前在-337930432.
+
+                                                                    //为啥子线程会醒来，这是关键
+epoll_wait函数醒了, 发生了1个事件，Thread-1,在-346323200线程
+遍历epollDispatcherData的events数组。。。。。。Thread-1...
+哪个fd:9发生了读事件, 在Thread-1线程channel_event_activate()方法执行..
+连接fd:9, 有事件revents=2 发生，当前工作线程是：Thread-1
+通过map快速把fd映射到具体的channel..
+channel-fd:9发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+handleWakeup()函数执行......
+socketPair[1]套接字读取, 在Thread-1线程
+channel_event_activate()方法执行结束..当前在-346323200
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNameThread-1...当前在-346323200
+dispatch方法后，eventLoop去处理pending队列。。Thread-1。当前是-346323200
+                                                                            //这里子线程处理pending才是关键，
+                                                                            //把新连接加入到epoll_可以监听
+pending链表上锁。 Thread-1...
+遍历pending链表,把channelElement都处理完。。。。。。 Thread-1...
+channel-fd:13的type=1，add..Thread-1.
+执行event_loop_handle_pending_add()函数... Thread-1...
+map和channel建立关系，map->entries[fd:13] = channel ..Thread-1.
+执行eventDispatcher的add函数 ..Thread-1...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 Thread-1...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:13的添加....Thread-1..
+pending链表处理完了。。。。。。 Thread-1...
+pending链表释放锁。 Thread-1...
+执行epoll_dispatch()函数 Thread-1..当前在-346323200.
+最终epoll_dispatch()函数中的epoll_wait阻塞 Thread-1..当前在-346323200.
+
+
+                                                                            //客户端fd:13发送过来消息
+epoll_wait函数醒了, 发生了1个事件，Thread-1,在-346323200线程
+遍历epollDispatcherData的events数组。。。。。。Thread-1...
+哪个fd:13发生了读事件, 在Thread-1线程channel_event_activate()方法执行..
+连接fd:13, 有事件revents=2 发生，当前工作线程是：Thread-1
+通过map快速把fd映射到具体的channel..
+channel-fd:13发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+tcp连接已经来数据了 tcpConnection-fd:13
+tcpConnect的send方法再给客户端发送回去 tcpConnection-fd:13
+tcpConnect的tcp_connection_send_buffer方法 tcpConnection-fd:13
+tcpConnect的tcp_connection_send_data方法 tcpConnection-fd:13
+channel角度看看能否写..... tcpConnection-fd:13
+channel可写...最终调用write方法写给客户端. tcpConnection-fd:13
+channel_event_activate()方法执行结束..当前在-346323200
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNameThread-1...当前在-346323200
+
+dispatch方法后，eventLoop去处理pending队列。。Thread-1。当前是-346323200
+pending链表上锁。 Thread-1...
+遍历pending链表,把channelElement都处理完。。。。。。 Thread-1...
+pending链表处理完了。。。。。。 Thread-1...
+pending链表释放锁。 Thread-1...
+执行epoll_dispatch()函数 Thread-1..当前在-346323200.
+最终epoll_dispatch()函数中的epoll_wait阻塞 Thread-1..当前在-346323200.
+
+
+
+                                                                                //又来一个新连接
+
+epoll_wait函数醒了, 发生了1个事件，main thread,在-337930432线程
+遍历epollDispatcherData的events数组。。。。。。main thread...
+哪个fd:6发生了读事件, 在main thread线程channel_event_activate()方法执行..
+连接fd:6, 有事件revents=2 发生，当前工作线程是：main thread
+通过map快速把fd映射到具体的channel..
+channel-fd:6发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+我是监听套接字的读事件处理函数，执行handle_connection_established()
+我是监听套接字fd:6的读事件处理函数，执行handle_connection_established()
+accept一个新连接， 新的socket=14
+
+新连接fd:14到来，调用thread_pool_get_loop()函数.......                    //新连接是fd:14
+线程池中的eventLoop,可以使用。。selected。。。-337930432。
+线程池满，重置线程池下标为0...-337930432。
+尝试从线程池中取得eventLoop:-603977536，绑定到tcpConnection中.......
+新连接fd:14要初始化tcpConnection，绑定eventLoop
+执行tcp_connection_new()----14。当前在-337930432。
+连接fd:14封装为channel,感兴趣事件event:2，data是tcpConnection
+新连接建立完成，来个回调。。。tcpConnection-fd:14
+新连接fd:14触发add_channel事件...当前在-337930432
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:14, Thread-2
+执行event_loop_do_channel_event函数，注册channel  eLNameThread-2 当前在-337930432
+调用event_loop_channel_buffer_nolock()方法，fd:14...Thread-2
+把channel1封装为channelElement放到eventLoop的pending队列中 Thread-2...            //主线程把新连接fd放到子线程的pending队列
+第一个channelElement，放到eventLoop的pending队首和队尾 Thread-2...
+调用event_loop_wakeup唤醒函数，fd:14.. eLnameThread-2. 当前在-337930432
+执行event_loop_wakeup()函数...elNameThread-2, 当前在-337930432
+
+
+往参数eventLoop里的socketPair[0]发一个字符...elNameThread-2, 当前在-337930432       //按照线程池读取顺序，交给第二个子线程
+event_loop_wakeup()函数结束...elNameThread-2, 当前在-337930432
+执行event_loop_do_channel_event函数结束 eLNameThread-2 当前在-337930432
+执行tcp_connection_new()结束了----14。。当前在-337930432。
+channel_event_activate()方法执行结束..当前在-337930432
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNamemain thread...当前在-337930432
+dispatch方法后，eventLoop去处理pending队列。。main thread。当前是-337930432
+pending链表上锁。 main thread...
+遍历pending链表,把channelElement都处理完。。。。。。 main thread...
+pending链表处理完了。。。。。。 main thread...
+pending链表释放锁。 main thread...
+执行epoll_dispatch()函数 main thread..当前在-337930432.
+最终epoll_dispatch()函数中的epoll_wait阻塞 main thread..当前在-337930432.
+
+                                                                //第二个子线程被唤醒
+epoll_wait函数醒了, 发生了1个事件，Thread-2,在-354715904线程
+遍历epollDispatcherData的events数组。。。。。。Thread-2...
+哪个fd:12发生了读事件, 在Thread-2线程channel_event_activate()方法执行..
+连接fd:12, 有事件revents=2 发生，当前工作线程是：Thread-2
+通过map快速把fd映射到具体的channel..
+channel-fd:12发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+handleWakeup()函数执行......
+socketPair[1]套接字读取, 在Thread-2线程
+channel_event_activate()方法执行结束..当前在-354715904
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNameThread-2...当前在-354715904
+dispatch方法后，eventLoop去处理pending队列。。Thread-2。当前是-354715904
+pending链表上锁。 Thread-2...
+
+
+遍历pending链表,把channelElement都处理完。。。。。。 Thread-2...                           //第二个子线程消费pending列表
+channel-fd:14的type=1，add..Thread-2.
+执行event_loop_handle_pending_add()函数... Thread-2...
+map和channel建立关系，map->entries[fd:14] = channel ..Thread-2.
+执行eventDispatcher的add函数 ..Thread-2...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 Thread-2...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:14的添加....Thread-2..
+pending链表处理完了。。。。。。 Thread-2...
+pending链表释放锁。 Thread-2...
+执行epoll_dispatch()函数 Thread-2..当前在-354715904.
+最终epoll_dispatch()函数中的epoll_wait阻塞 Thread-2..当前在-354715904.
+
+
+
+                                                                                //第三个客户端连接来了
+epoll_wait函数醒了, 发生了1个事件，main thread,在-337930432线程
+遍历epollDispatcherData的events数组。。。。。。main thread...
+哪个fd:6发生了读事件, 在main thread线程channel_event_activate()方法执行..
+连接fd:6, 有事件revents=2 发生，当前工作线程是：main thread
+通过map快速把fd映射到具体的channel..
+channel-fd:6发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+我是监听套接字的读事件处理函数，执行handle_connection_established()
+我是监听套接字fd:6的读事件处理函数，执行handle_connection_established()
+accept一个新连接， 新的socket=15
+新连接fd:15到来，调用thread_pool_get_loop()函数.......
+线程池中的eventLoop,可以使用。。selected。。。-337930432。
+
+尝试从线程池中取得eventLoop:-469759808，绑定到tcpConnection中.......                   //按照顺序又该第一个子线程来接收
+新连接fd:15要初始化tcpConnection，绑定eventLoop
+执行tcp_connection_new()----15。当前在-337930432。
+连接fd:15封装为channel,感兴趣事件event:2，data是tcpConnection
+新连接建立完成，来个回调。。。tcpConnection-fd:15
+新连接fd:15触发add_channel事件...当前在-337930432
+执行event_loop_add_channel_event函数，第四个参数是1，注册channel,fd:15, Thread-1
+执行event_loop_do_channel_event函数，注册channel  eLNameThread-1 当前在-337930432
+调用event_loop_channel_buffer_nolock()方法，fd:15...Thread-1
+把channel1封装为channelElement放到eventLoop的pending队列中 Thread-1...
+第一个channelElement，放到eventLoop的pending队首和队尾 Thread-1...
+调用event_loop_wakeup唤醒函数，fd:15.. eLnameThread-1. 当前在-337930432
+执行event_loop_wakeup()函数...elNameThread-1, 当前在-337930432
+往参数eventLoop里的socketPair[0]发一个字符...elNameThread-1, 当前在-337930432
+event_loop_wakeup()函数结束...elNameThread-1, 当前在-337930432
+执行event_loop_do_channel_event函数结束 eLNameThread-1 当前在-337930432
+执行tcp_connection_new()结束了----15。。当前在-337930432。
+channel_event_activate()方法执行结束..当前在-337930432
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNamemain thread...当前在-337930432
+dispatch方法后，eventLoop去处理pending队列。。main thread。当前是-337930432
+pending链表上锁。 main thread...
+遍历pending链表,把channelElement都处理完。。。。。。 main thread...
+pending链表处理完了。。。。。。 main thread...
+pending链表释放锁。 main thread...
+执行epoll_dispatch()函数 main thread..当前在-337930432.
+最终epoll_dispatch()函数中的epoll_wait阻塞 main thread..当前在-337930432.
+
+                                                            //果然是第一个线程来接收
+epoll_wait函数醒了, 发生了1个事件，Thread-1,在-346323200线程
+遍历epollDispatcherData的events数组。。。。。。Thread-1...
+哪个fd:9发生了读事件, 在Thread-1线程channel_event_activate()方法执行..
+连接fd:9, 有事件revents=2 发生，当前工作线程是：Thread-1
+通过map快速把fd映射到具体的channel..
+channel-fd:9发生读事件..，执行它当初注册时的回调eventReadCallback指针。。。。。。
+handleWakeup()函数执行......
+socketPair[1]套接字读取, 在Thread-1线程
+channel_event_activate()方法执行结束..当前在-346323200
+遍历epollDispatcherData的events数组结束。。休息3s中。。elNameThread-1...当前在-346323200
+dispatch方法后，eventLoop去处理pending队列。。Thread-1。当前是-346323200
+pending链表上锁。 Thread-1...
+遍历pending链表,把channelElement都处理完。。。。。。 Thread-1...
+channel-fd:15的type=1，add..Thread-1.
+执行event_loop_handle_pending_add()函数... Thread-1...
+map和channel建立关系，map->entries[fd:15] = channel ..Thread-1.
+执行eventDispatcher的add函数 ..Thread-1...
+eventDispatcher结构体的add指针成员指向的是epoll_add()函数 Thread-1...
+最最最终，是调用epoll_ctl，完成channel封装下的fd:15的添加....Thread-1..
+pending链表处理完了。。。。。。 Thread-1...
+pending链表释放锁。 Thread-1...
+执行epoll_dispatch()函数 Thread-1..当前在-346323200.
+最终epoll_dispatch()函数中的epoll_wait阻塞 Thread-1..当前在-346323200.
+

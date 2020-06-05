@@ -34,7 +34,7 @@ int onMessage(struct buffer *input, struct tcp_connection *tcpConnection) {
         buffer_append_char(output, buffer_read_char(input));
     }
     //把output里的数据通过tcp_connection里的方法，发送给客户端
-    printf("tcpConnect的send方法再给客户端发送回去 %s\n", tcpConnection->name);
+    printf("调用send方法再给客户端发送回去 %s\n", tcpConnection->name);
     tcp_connection_send_buffer(tcpConnection, output);
     return 0;
 }
