@@ -100,7 +100,7 @@ int event_loop_do_channel_event(struct event_loop *eventLoop, int fd, struct cha
     pthread_mutex_lock(&eventLoop->mutex);
     //这个is_handle_pending确保等于0，否则退出程序
 //    printf("如果往pending队列写数据和从pending队列读数据的线程不同，则要必要加锁！ \n")
-    printf("获得pending队列锁！ \n")
+    printf("获得pending队列锁！ \n");
     assert(eventLoop->is_handle_pending == 0);
 
     //实例化channel_element，并放到eventLoop的成员head,tail这些
@@ -288,8 +288,8 @@ void event_loop_wakeup(struct event_loop *eventLoop) {
     如果不是多线程环境，该回调根本不会执行
 */
 int handleWakeup(void *data) {
-    printf("handleWakeup()函数执行.,表明子线程被唤醒....在%s线程\n", eventLoop->thread_name);
     struct event_loop *eventLoop = (struct event_loop *) data;
+    printf("handleWakeup()函数执行.,表明子线程被唤醒....在%s线程\n", eventLoop->thread_name);
     char one;
     ssize_t n = read(eventLoop->socketPair[1], &one, sizeof one);
     //一定是一个字符，我觉得没必要那么严格
@@ -360,9 +360,7 @@ struct event_loop *event_loop_init_with_name(char *thread_name) {
  */
 int event_loop_run(struct event_loop *eventLoop) {
     assert(eventLoop != NULL);
-
     struct event_dispatcher *dispatcher = eventLoop->eventDispatcher;
-
     if (eventLoop->owner_thread_id != pthread_self()) {
         exit(1);
     }
